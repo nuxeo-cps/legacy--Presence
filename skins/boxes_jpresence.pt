@@ -1,0 +1,42 @@
+<!-- ==================================================================== -->
+<!-- ==================================================================== -->
+<!--
+    Boxes for Jabber User Presence display list
+-->
+<!-- ==================================================================== -->
+<!-- ==================================================================== -->
+
+
+
+
+<!-- ==================================================================== -->
+<!-- ==================================================================== -->
+<!-- Skin to display List of Applications  -->
+<!-- -->
+<metal:block define-macro="jpresencebox_default"
+  tal:define="res python:box['box'].setUserNavigation(here,user);
+              presence_list python:box['box'].getPresenceList(here);
+              presence_keys python:presence_list.keys()">
+    <span tal:condition="python:len(presence_list)>0">
+    <!-- Add box border -->
+    <metal:block use-macro="python:path(box['settings']['box_skin'])">
+        <!-- Put Title -->
+        <metal:block fill-slot="box_title" i18n:translate="" tal:content="box/box/title">
+            box text title
+        </metal:block>
+        
+        <!-- Put Content -->
+        <metal:block fill-slot="box_body">
+            <div tal:repeat="present_user presence_keys" class="">
+                <div>
+                <img width="16" height="14" border="0"
+                        tal:attributes="alt python: presence_list[present_user].get('alt');
+                                        src python: presence_list[present_user].get('img')" />
+                <div tal:replace="python: present_user"></div>
+                </div>
+                
+            </div>  
+         </metal:block>
+    </metal:block>
+    </span>
+</metal:block>

@@ -1,0 +1,168 @@
+<metal:html use-macro="here/main_template/macros/master">
+
+<metal:main fill-slot="main">
+
+<metal:macro define-macro="boxform"
+  tal:define="box_url request/box_url|python:0;
+              context_urlc python:here.getContextUrl(utool=utool, concat=1);">
+
+<h2 i18n:translate="heading_box_edit_form">Box edition</h2>
+
+box: <tal:block replace="box_url" />
+
+<!--tal:block repeat="box python:btool.getBoxes(here,
+                       include_only_in_subfolder=1)">
+  <tal:block condition="python:box['url'] == box_url">
+   <br /><br />
+<form action="box_edit" method="post" enctype="multipart/form-data"
+  tal:attributes="action string:${context_urlc}/box_edit"
+  tal:define="box_category python:box['box'].category">
+<input type="hidden" name="box_url" value=""
+  tal:attributes="value box_url" />
+<input type="hidden" name="box_category" value=""
+  tal:attributes="value box_category" />
+<table border="0" summary="box properties layout">
+  <tr valign="top">
+    <th align="right" i18n:translate="label_title">Title</th>
+    <td colspan="5">
+      <input type="text" name="title" value="" size="60"
+             tal:attributes="value box/box/title" />
+    </td>
+  </tr>
+  <tr valign="top">
+    <th align="right" i18n:translate="label_slot">Slot</th>
+    <td>
+      <select name="slot">
+      <tal:block repeat="slot here/getBoxSlots"
+        tal:define="selected_slot
+        python:test(box['settings']['slot']=='creation_slot', 'center_top',
+                    box['settings']['slot']);">
+        <option value="slot" tal:attributes="value slot;
+          selected python:test(slot==selected_slot,'selected', nothing);"
+           i18n:translate="" tal:content="string:label_${slot}">Slot</option>
+      </tal:block>
+      </select>
+    </td>
+    <th align="right" i18n:translate="label_order">Order</th>
+    <td><input type="text" name="order" value="" size="3"
+           tal:attributes="value box/settings/order" /></td>
+    <th align="right" i18n:translate="label_display">Display</th>
+    <td>
+      <select name="display_box">
+        <option value="maximized" i18n:translate="label_maximized"
+          tal:attributes="selected python:test(box['settings']['minimized'], nothing, 'selected');">Maximized</option>
+        <option value="minimized" i18n:translate="label_minimized"
+          tal:attributes="selected python:test(box['settings']['minimized'], 'selected', nothing)">Minimized</option>
+        <option value="closed" i18n:translate="label_closed"
+          tal:attributes="selected python:test(box['settings']['closed'], 'selected', nothing)">Closed</option>
+      </select>
+    </td>
+  </tr>
+  <tr>
+    <th align="right" i18n:translate="label_box_skin">Box skin</th>
+    <td colspan="5">
+      <select name="box_skin">
+        <tal:block repeat="skin here/getBoxSkins">
+        <option value="skin/macro_path"
+          tal:attributes="value skin/macro_path;
+            selected python:test(box['settings']['box_skin']==skin['macro_path'],
+          'selected', nothing)" i18n:translate="" tal:content="skin/title">
+          </option>
+        </tal:block>
+      </select>
+    </td>
+  </tr>
+  <tr>
+    <td></td>
+    <td colspan="5">
+        <input type="checkbox" name="display_in_subfolder"
+               checked="" class="noborder"
+               tal:attributes="checked
+                 python:test(box['box'].display_in_subfolder, 'checked',
+                   nothing)"
+         /><label i18n:translate="label_visible_in_subfolder">visible in subfolder</label><br />
+        <input type="checkbox" name="display_only_in_subfolder:boolean"
+               checked="" class="noborder"
+               tal:attributes="checked
+                 python:test(box['box'].display_only_in_subfolder, 'checked',
+                   nothing)" />
+        <label i18n:translate="label_visible_only_in_subfolder">visible only in subfolder</label>
+    </td>
+  </tr>
+  <tr valign="top">
+    <th align="right" i18n:translate="label_btype">Type</th>
+    <td colspan="5">
+      <tal:block
+        define="category python:here.getJabberBoxTypes(category=box_category);
+                providertype string:${box/settings/provider}@${box/settings/btype}"
+        condition="category">
+      <table border="0" width="100%" cellpadding="1" cellspacing="1"
+        summary="box types listing">
+        <tr><td colspan="2">
+          <strong i18n:translate="" tal:content="category/title|nothing" /><br />
+          <em i18n:translate="" tal:content="category/desc|nothing" />
+        </td></tr>
+        <tal:block define="global boxtype_selected python:0">
+          <tal:block repeat="type category/types">
+          <tr><td width="30%" tal:define="sf string:${type/provider}@${type/id};
+                                          sfISpt python:test(sf==providertype,1,0)">
+            <input type="radio" name="providertype" value="" class="noborder"
+                   tal:attributes="value sf;
+                                   id sf;
+                                   checked
+                                     python:test(sfISpt,
+                                                 'checked',
+                                                 test(repeat['type'].end and
+                                                        not boxtype_selected,
+                                                      'checked',
+                                                      nothing))" />
+            <label for="" tal:attributes="for sf">
+              <i tal:omit-tag="python:type['id']=='default'">
+                <span tal:replace="string:${type/provider}-${type/id}" />
+              </i>
+            </label>
+            <tal:block tal:define="global boxtype_selected
+                                     python:test(boxtype_selected or sfISpt,
+                                                 1,0)" />
+            </td>
+            <td><em i18n:translate="" tal:content="type/desc" /></td>
+          </tr>
+          </tal:block>
+        </tal:block>
+      </table>
+      <br />
+      <em i18n:translate="help_italic_vendor_boxes_types">
+        Box types in italic are predefined types. You cannot change their
+        properties from this interface. Use the default box to do so.
+      </em>
+      </tal:block>
+    </td>
+  </tr>
+  <tr>
+    <td></td><td colspan="5"><hr /></td>
+  </tr>
+  <metal:block define-slot="additional_fields">
+  </metal:block>
+  <tr >
+    <td></td>
+    <td colspan="5">
+      <input type="submit" name="change_and_edit" value="button_change_and_edit"
+             class="standalone" i18n:attributes="value"
+             tal:condition="python:checkPerm('Manage Boxes', box['box'])" />
+      <input type="submit" name="change" value="button_change"
+             class="standalone" i18n:attributes="value"
+             tal:condition="python:checkPerm('Manage Boxes', box['box'])" />
+      <input type="submit" name="back" i18n:attributes="value"
+             class="context" value="button_back" />
+    </td>
+  </tr>
+</table>
+
+</form>
+  </tal:block>
+</tal:block-->
+</metal:macro>
+</metal:main>
+
+</metal:html>
+ 
